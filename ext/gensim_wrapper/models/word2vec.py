@@ -1,5 +1,5 @@
 from gensim.models.word2vec import *
-from ext.updatedgensim.models.keyedvectors import *
+from ext.gensim_wrapper.models.keyedvectors import *
 
 try:
     import pyximport
@@ -9,12 +9,12 @@ try:
 
     pyximport.install(setup_args={"include_dirs": [models_dir, get_include()]})
     #import pyximport; pyximport.install()
-    from ext.updatedgensim.models.word2vec_inner import train_batch_sg_topic
+    from ext.gensim_wrapper.models.word2vec_inner import train_batch_sg_topic
 except ImportError:
     raise ValueError("An error occurred while loading the optimized version!")
 
 
-class TNEWord2Vec(Word2Vec):
+class Word2VecWrapper(Word2Vec):
 
     def __init__(
             self, sentences=None, size=100, alpha=0.025, window=5, min_count=5,
@@ -22,10 +22,10 @@ class TNEWord2Vec(Word2Vec):
             sg=0, hs=0, negative=5, cbow_mean=1, hashfxn=hash, iter=5, null_word=0,
             trim_rule=None, sorted_vocab=1, batch_words=MAX_WORDS_IN_BATCH, compute_loss=False):
 
-        super(TNEWord2Vec, self).__init__(sentences, size, alpha, window, min_count,
-                                          max_vocab_size, sample, seed, workers, min_alpha,
-                                          sg, hs, negative, cbow_mean, hashfxn, iter, null_word,
-                                          trim_rule, sorted_vocab, batch_words, compute_loss)
+        super(Word2VecWrapper, self).__init__(sentences, size, alpha, window, min_count,
+                                              max_vocab_size, sample, seed, workers, min_alpha,
+                                              sg, hs, negative, cbow_mean, hashfxn, iter, null_word,
+                                              trim_rule, sorted_vocab, batch_words, compute_loss)
 
     def train_topic(self, number_of_topic, sentences, total_examples=None, total_words=None,
                     epochs=None, start_alpha=None, end_alpha=None,
@@ -261,19 +261,9 @@ class TNEWord2Vec(Word2Vec):
         self.syn0_lockf_topic = ones(number_of_topics, dtype=REAL)  # zeros suppress learning
 
     def initialize_word_vectors(self):
-        self.wv = TNEKeyedVectors()
+        self.wv = KeyedVectorsWrapper()
 
-"""
-class CombineSentences(object):
 
-    def __init__(self, node_filename, topic_filename):
-        self.topic_filename = topic_filename
-        self.node_filename = node_filename
-
-    def __iter__(self):
-        for nodes, topics in zip(LineSentence(self.node_filename), LineSentence(self.topic_filename)):
-            yield [(u, int(v)) for (u, v) in zip(nodes, topics)]
-"""
 class CombineSentences(object):
 
     def __init__(self, node_filename, topic_filename):

@@ -5,7 +5,7 @@ import os
 import time
 from utils.utils import *
 from corpus.corpus import *
-from ext.updatedgensim.models.word2vec import *
+from ext.gensim_wrapper.models.word2vec import *
 
 
 dataset = "citeseer"

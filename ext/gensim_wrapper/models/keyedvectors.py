@@ -1,10 +1,10 @@
 from gensim.models.keyedvectors import *
 
 
-class TNEKeyedVectors(KeyedVectors):
+class KeyedVectorsWrapper(KeyedVectors):
 
     def __init__(self):
-        super(TNEKeyedVectors, self).__init__()
+        super(KeyedVectorsWrapper, self).__init__()
         self.syn0_topic = []
         self.syn0norm = None
 

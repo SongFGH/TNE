@@ -54,12 +54,11 @@ def generate_id2node(wordmap_file):
     return id2node
 
 
-def convert2topic_corpus(tassign_file, output_file):
-    with open(tassign_file, 'r') as fin, open(output_file, 'w') as fout:
-        for line in fin:
+def convert_node2topic(tassign_file):
+    with open(tassign_file, 'r') as f:
+        for line in f:
             tokens = line.strip().split()
-            topic_line = [token.split(':')[1] for token in tokens]
-            fout.write("{}\n".format(" ".join(t for t in topic_line)))
+            yield [token.split(':')[1] for token in tokens]
 
 
 def concatenate_embeddings_max(node_embedding_file, topic_embedding_file, node2topic, output_filename):
