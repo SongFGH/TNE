@@ -1,4 +1,4 @@
-from os.path import basename, splitext
+from os.path import basename, splitext, join
 from tne.tne import TNE
 from utils.utils import *
 import time
@@ -25,54 +25,21 @@ alpha = 50.0/float(number_of_topics)
 beta = 0.1
 
 
-node_embedding_file = outputs_folder + \
-                      "{}_n{}_l{}_w{}_k{}_{}_node.embedding".format(splitext(basename(dataset_file))[0],
-                                                                    params['number_of_walks'],
-                                                                    params['walk_length'],
-                                                                    params['window_size'],
-                                                                    number_of_topics,
-                                                                    method)
+base_desc = "{}_n{}_l{}_w{}_k{}_{}".format(splitext(basename(dataset_file))[0],
+                                           params['number_of_walks'],
+                                           params['walk_length'],
+                                           params['window_size'],
+                                           number_of_topics,
+                                           method)
 
-topic_embedding_file = outputs_folder + \
-                      "{}_n{}_l{}_w{}_k{}_{}_topic.embedding".format(splitext(basename(dataset_file))[0],
-                                                                     params['number_of_walks'],
-                                                                     params['walk_length'],
-                                                                     params['window_size'],
-                                                                     number_of_topics,
-                                                                     method)
+node_embedding_file = join(outputs_folder, "{}_node.embedding".format(base_desc))
+topic_embedding_file = join(outputs_folder, "{}_topic.embedding".format(base_desc))
 
-corpus_path_for_lda = temp_folder + \
-                      "{}_n{}_l{}_w{}_k{}_{}.corpus".format(splitext(basename(dataset_file))[0],
-                                                            params['number_of_walks'],
-                                                            params['walk_length'],
-                                                            params['window_size'],
-                                                            number_of_topics,
-                                                            method)
+concatenated_embedding_file_max = join(outputs_folder, "{}_final_max.embedding".format(base_desc))
+concatenated_embedding_file_avg = join(outputs_folder, "{}_final_avg.embedding".format(base_desc))
+concatenated_embedding_file_min = join(outputs_folder, "{}_final_min.embedding".format(base_desc))
 
-concatenated_embedding_file_max = outputs_folder + \
-                      "{}_n{}_l{}_w{}_k{}_{}_final_max.embedding".format(splitext(basename(dataset_file))[0],
-                                                                     params['number_of_walks'],
-                                                                     params['walk_length'],
-                                                                     params['window_size'],
-                                                                     number_of_topics,
-                                                                     method)
-
-concatenated_embedding_file_avg = outputs_folder + \
-                      "{}_n{}_l{}_w{}_k{}_{}_final_avg.embedding".format(splitext(basename(dataset_file))[0],
-                                                                     params['number_of_walks'],
-                                                                     params['walk_length'],
-                                                                     params['window_size'],
-                                                                     number_of_topics,
-                                                                     method)
-
-concatenated_embedding_file_min = outputs_folder + \
-                      "{}_n{}_l{}_w{}_k{}_{}_final_min.embedding".format(splitext(basename(dataset_file))[0],
-                                                                     params['number_of_walks'],
-                                                                     params['walk_length'],
-                                                                     params['window_size'],
-                                                                     number_of_topics,
-                                                                     method)
-
+corpus_path_for_lda = join(temp_folder, "{}_lda_corpus.corpus".format(base_desc))
 
 graph_path = dataset_folder + dataset_file
 tne = TNE(graph_path)
