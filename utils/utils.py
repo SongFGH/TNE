@@ -2,7 +2,9 @@ import numpy as np
 from collections import OrderedDict
 
 
-def find_max_topic_for_nodes(phi_file, id2node, number_of_nodes, number_of_topics):
+def find_max_topic_for_nodes(phi_file, id2node, number_of_topics):
+
+    number_of_nodes = len(id2node)
 
     # Phi is the node-topic distribution
     phi = np.zeros(shape=(number_of_topics, number_of_nodes), dtype=np.float)

@@ -19,6 +19,15 @@ except ImportError:
     raise ImportError("An error occurred during loading the external libraries!")
 
 
+class returnWalkIterator:
+    def __init__(self, corpus):
+        self.corpus = corpus
+
+    def __iter__(self):
+        for walk in self.corpus:
+            yield [str(w) for w in walk]
+
+
 class TNE:
     def __init__(self, graph_path):
         self.graph = None
@@ -111,7 +120,7 @@ class TNE:
         initial_time = time.time()
 
         # Extract the node embeddings
-        self.model = Word2VecWrapper(sentences=self.corpus,
+        self.model = Word2VecWrapper(sentences=returnWalkIterator(self.corpus),
                                      size=self.params["embedding_size"],
                                      window=self.params["window_size"],
                                      sg=1, hs=1,
@@ -162,3 +171,14 @@ class TNE:
         # Save the topic embeddings
         self.model.wv.save_word2vec_topic_format(fname=topic_embedding_file)
         print("The topic embeddings were generated and saved in {:.2f} secs.".format(time.time() - initial_time))
+
+    def get_file_path(self, filename):
+
+        if filename == "phi":
+            return os.path.realpath(self.lda_phi_file)
+
+        if filename == "theta":
+            return os.path.realpath(self.lda_theta_file)
+
+    def get_nxgraph(self):
+        return self.graph
