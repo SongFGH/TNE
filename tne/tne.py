@@ -184,3 +184,14 @@ class TNE:
         # Save the topic embeddings
         self.model.wv.save_word2vec_topic_format(fname=topic_embedding_file)
         print("The topic embeddings were generated and saved in {:.2f} secs.".format(time.time() - initial_time))
+
+    def get_file_path(self, filename):
+
+        if filename == "phi":
+            return os.path.realpath(self.lda_phi_file)
+
+        if filename == "theta":
+            return os.path.realpath(self.lda_theta_file)
+
+    def get_nxgraph(self):
+        return self.graph
