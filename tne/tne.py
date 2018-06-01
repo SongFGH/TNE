@@ -6,9 +6,10 @@ import networkx as nx
 from utils.utils import *
 from ext.gensim_wrapper.models.word2vec import Word2VecWrapper, CombineSentences, LineSentence
 
-sys.path.append("../ext/deepwalk/deepwalk")
-sys.path.append("../ext/node2vec/src")
-lda_exe_path = "../ext/gibbslda/lda"
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../ext/deepwalk/deepwalk")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../ext/node2vec/src")))
+lda_exe_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../ext/gibbslda/lda"))
+
 
 try:
     import graph as deepwalk
