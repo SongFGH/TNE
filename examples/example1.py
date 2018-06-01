@@ -7,7 +7,7 @@ dataset_folder = "../datasets/"
 outputs_folder = "../outputs/"
 temp_folder = "../temp/"
 
-dataset_file = "citeseer.gml"
+dataset_file = "Homo_sapiens.gml"
 
 method = "deepwalk"
 number_of_topics = 65
