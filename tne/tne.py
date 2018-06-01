@@ -5,6 +5,7 @@ import random
 import networkx as nx
 from utils.utils import *
 from ext.gensim_wrapper.models.word2vec import Word2VecWrapper, CombineSentences, LineSentence
+from gensim.utils import smart_open
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../ext/deepwalk/deepwalk")))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../ext/node2vec/src")))
@@ -94,7 +95,7 @@ class TNE:
             self.params = params
 
             # Temporarily generate the edge list
-            with open(self.temp_folder + "graph_deepwalk.edgelist", 'w') as f:
+            with smart_open(self.temp_folder + "graph_deepwalk.edgelist", 'w') as f:
                 for line in nx.generate_edgelist(self.graph, data=False):
                     f.write("{}\n".format(line))
 
@@ -132,7 +133,7 @@ class TNE:
     def save_corpus(self, corpus_file, with_title=False, corpus=None):
 
         # Save the corpus
-        with open(corpus_file, "w") as f:
+        with smart_open(corpus_file, "w") as f:
 
             if with_title is True:
                 f.write(u"{}\n".format(self.number_of_nodes * self.params['number_of_walks']))
@@ -190,7 +191,7 @@ class TNE:
 
     def get_topic_corpus(self):
         topic_corpus = []
-        with open(self.lda_tassignfile, 'r') as f:
+        with smart_open(self.lda_tassignfile, 'r') as f:
             for line in f:
                 tokens = line.strip().split()
                 topic_corpus.append([token.split(':')[1] for token in tokens])
