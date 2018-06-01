@@ -183,8 +183,9 @@ class TNE:
 
         # Generate the id2node dictionary
         id2node = generate_id2node(self.lda_wordmapfile)
-
         print("-> The LDA algorithm run in {:.2f} secs".format(time.time() - initial_time))
+
+        assert len(id2node) == self.number_of_nodes, "LDA could not run well!"
 
         return id2node
 
