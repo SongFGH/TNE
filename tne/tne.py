@@ -4,7 +4,7 @@ import time
 import random
 import networkx as nx
 from utils.utils import *
-from ext.gensim_wrapper.models.word2vec import Word2VecWrapper, CombineSentences
+from ext.gensim_wrapper.models.word2vec import Word2VecWrapper, CombineSentences, LineSentence
 
 sys.path.append("../ext/deepwalk/deepwalk")
 sys.path.append("../ext/node2vec/src")
@@ -39,6 +39,9 @@ class TNE:
         self.model = None
 
         self.temp_folder = "../temp/"
+        self.node_corpus_path = ""
+        self.topic_corpus_path = ""
+
         self.lda_corpus_dir = ""
         self.lda_wordmapfile = ""
         self.lda_tassignfile = ""
@@ -48,6 +51,9 @@ class TNE:
         self.lda_theta_file = ""
 
         self.read_graph(graph_path)
+
+        if not os.path.exists(self.temp_folder):
+            os.makedirs(self.temp_folder)
 
     def read_graph(self, filename, filetype=".gml"):
         dataset_name = os.path.splitext(os.path.basename(filename))[0]
@@ -103,12 +109,15 @@ class TNE:
         else:
             raise ValueError("Invalid method name!")
 
+        self.node_corpus_path = os.path.join(self.temp_folder, "node.corpus")
+        self.save_corpus(self.node_corpus_path, with_title=False)
+
         self.method = method
         self.params = params
 
         print("The corpus was generated in {:.2f} secs.".format(time.time() - initial_time))
 
-    def save_corpus(self, corpus_file, with_title=False):
+    def save_corpus(self, corpus_file, with_title=False, corpus=None):
 
         # Save the corpus
         with open(corpus_file, "w") as f:
@@ -116,15 +125,19 @@ class TNE:
             if with_title is True:
                 f.write(u"{}\n".format(self.number_of_nodes * self.params['number_of_walks']))
 
-            for walk in self.corpus:
-                f.write(u"{}\n".format(u" ".join(v for v in walk)))
+            if corpus is None:
+                for walk in self.corpus:
+                    f.write(u"{}\n".format(u" ".join(v for v in walk)))
+            else:
+                for walk in corpus:
+                    f.write(u"{}\n".format(u" ".join(v for v in walk)))
 
     def extract_node_embedding(self, node_embedding_file, workers=3):
 
         initial_time = time.time()
 
         # Extract the node embeddings
-        self.model = Word2VecWrapper(sentences=WalkIterator(self.corpus),
+        self.model = Word2VecWrapper(sentences=LineSentence(self.node_corpus_dir),
                                      size=self.params["embedding_size"],
                                      window=self.params["window_size"],
                                      sg=1, hs=1,
@@ -177,8 +190,11 @@ class TNE:
         initial_time = time.time()
         # Convert node corpus to the corresponding topic corpus
         topic_corpus = self.get_topic_corpus()
+        self.topic_corpus_path = os.path.join(self.temp_folder, "topic.corpus")
+        self.save_corpus(corpus_file=self.topic_corpus_path,  with_title=False, corpus=topic_corpus)
+
         # Construct the tuples (word, topic) with each word in the corpus and its corresponding topic assignment
-        combined_sentences = CombineSentences(WalkIterator(self.corpus), WalkIterator(topic_corpus))
+        combined_sentences = CombineSentences(self.node_corpus_path, self.topic_corpus_path)
         # Extract the topic embeddings
         self.model.train_topic(number_of_topics, combined_sentences)
         # Save the topic embeddings
@@ -195,3 +211,12 @@ class TNE:
 
     def get_nxgraph(self):
         return self.graph
+
+    def get_lda_corpus_path(self):
+        return self.lda_node_corpus
+
+    def get_node_corpus_path(self):
+        return self.node_corpus_path
+
+    def get_topic_corpus_path(self):
+        return self.topic_corpus_path

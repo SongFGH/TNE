@@ -43,7 +43,7 @@ corpus_path_for_lda = join(temp_folder, "{}_lda_corpus.corpus".format(base_desc)
 
 graph_path = dataset_folder + dataset_file
 tne = TNE(graph_path)
-tne.perform_random_walks(method="deepwalk", params=params)
+tne.perform_random_walks(method=method, params=params)
 tne.save_corpus(corpus_path_for_lda, with_title=True)
 id2node = tne.run_lda(alpha=alpha, beta=beta, number_of_iters=number_of_iters,
                       number_of_topics=number_of_topics, lda_corpus_path=corpus_path_for_lda)
@@ -57,7 +57,7 @@ phi_file = tne.lda_phi_file
 
 # Compute the corresponding topics for each node
 initial_time = time.time()
-node2topic_max = find_max_topic_for_nodes(phi_file, id2node, number_of_nodes, number_of_topics)
+node2topic_max = find_max_topic_for_nodes(phi_file, id2node, number_of_topics)
 # Concatenate the embeddings
 concatenate_embeddings_max(node_embedding_file=node_embedding_file,
                            topic_embedding_file=topic_embedding_file,
