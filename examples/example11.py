@@ -7,7 +7,7 @@ dataset_folder = "../datasets/"
 outputs_folder = "../outputs/"
 temp_folder = "../temp/"
 
-dataset_file = "citeseer.gml"
+dataset_file = "Homo_sapiens.gml"
 
 method = "deepwalk"
 number_of_topics = 65
@@ -43,7 +43,7 @@ corpus_path_for_lda = join(temp_folder, "{}_lda_corpus.corpus".format(base_desc)
 
 graph_path = dataset_folder + dataset_file
 tne = TNE(graph_path)
-tne.perform_random_walks(method="deepwalk", params=params)
+tne.perform_random_walks(method=method, params=params)
 tne.save_corpus(corpus_path_for_lda, with_title=True)
 id2node = tne.run_lda(alpha=alpha, beta=beta, number_of_iters=number_of_iters,
                       number_of_topics=number_of_topics, lda_corpus_path=corpus_path_for_lda)
@@ -53,7 +53,7 @@ tne.extract_topic_embedding(number_of_topics=number_of_topics,
 
 
 number_of_nodes = tne.number_of_nodes
-phi_file = tne.lda_phi_file
+phi_file = tne.get_file_path(filename='phi')
 
 # Compute the corresponding topics for each node
 initial_time = time.time()
