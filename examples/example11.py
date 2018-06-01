@@ -57,7 +57,7 @@ phi_file = tne.lda_phi_file
 
 # Compute the corresponding topics for each node
 initial_time = time.time()
-node2topic_max = find_max_topic_for_nodes(phi_file, id2node, number_of_nodes, number_of_topics)
+node2topic_max = find_max_topic_for_nodes(phi_file, id2node, number_of_topics)
 # Concatenate the embeddings
 concatenate_embeddings_max(node_embedding_file=node_embedding_file,
                            topic_embedding_file=topic_embedding_file,

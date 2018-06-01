@@ -25,7 +25,7 @@ class WalkIterator:
 
     def __iter__(self):
         for walk in self.corpus:
-            yield [str(w) for w in walk]
+            yield walk
 
 
 class TNE:
@@ -178,7 +178,7 @@ class TNE:
         # Convert node corpus to the corresponding topic corpus
         topic_corpus = self.get_topic_corpus()
         # Construct the tuples (word, topic) with each word in the corpus and its corresponding topic assignment
-        combined_sentences = CombineSentences(WalkIterator(self.corpus), WalkIterator(topic_corpus))
+        combined_sentences = CombineSentences(WalkIterator(self.corpus), topic_corpus)
         # Extract the topic embeddings
         self.model.train_topic(number_of_topics, combined_sentences)
         # Save the topic embeddings
