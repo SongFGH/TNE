@@ -53,7 +53,7 @@ tne.extract_topic_embedding(number_of_topics=number_of_topics,
 
 
 number_of_nodes = tne.number_of_nodes
-phi_file = tne.lda_phi_file
+phi_file = tne.get_file_path(filename='phi')
 
 # Compute the corresponding topics for each node
 initial_time = time.time()

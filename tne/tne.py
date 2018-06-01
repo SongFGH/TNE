@@ -29,7 +29,7 @@ class WalkIterator:
 
 
 class TNE:
-    def __init__(self, graph_path):
+    def __init__(self, graph_path=None):
         self.graph = None
         self.graph_name = ""
         self.number_of_nodes = 0
@@ -50,7 +50,8 @@ class TNE:
         self.lda_phi_file = ""
         self.lda_theta_file = ""
 
-        self.read_graph(graph_path)
+        if graph_path is not None:
+            self.read_graph(graph_path)
 
         if not os.path.exists(self.temp_folder):
             os.makedirs(self.temp_folder)
@@ -69,6 +70,16 @@ class TNE:
             self.graph_name = dataset_name
         else:
             raise ValueError("Invalid file type!")
+
+    def set_graph(self, graph, graph_name="unknown"):
+
+        self.graph = graph
+        self.number_of_nodes = graph.number_of_nodes()
+        self.graph_name = graph_name
+
+        print("Graph name: {}".format(self.graph_name))
+        print("The number of nodes: {}".format(self.graph.number_of_nodes()))
+        print("The number of edges: {}".format(self.graph.number_of_edges()))
 
     def perform_random_walks(self, method, params):
 
@@ -137,7 +148,7 @@ class TNE:
         initial_time = time.time()
 
         # Extract the node embeddings
-        self.model = Word2VecWrapper(sentences=LineSentence(self.node_corpus_dir),
+        self.model = Word2VecWrapper(sentences=LineSentence(self.node_corpus_path),
                                      size=self.params["embedding_size"],
                                      window=self.params["window_size"],
                                      sg=1, hs=1,
