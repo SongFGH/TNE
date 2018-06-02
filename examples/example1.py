@@ -7,7 +7,7 @@ dataset_folder = "../datasets/"
 outputs_folder = "../outputs/"
 temp_folder = "../temp/"
 
-dataset_file = "citeseer.gml"
+dataset_file = "POS.gml"
 
 
 params = {}
