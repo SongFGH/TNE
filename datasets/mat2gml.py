@@ -32,7 +32,7 @@ def load_matfile(filename, variable_name="network", undirected=True):
 	return to_networkx(mat_matrix, undirected)
 
 
-path = "./dblp.mat"
-output = "./dblp.gml"
+path = "./POS.mat"
+output = "./POS.gml"
 g = load_matfile(path, variable_name="network", undirected=True)
 nx.write_gml(g, output)
