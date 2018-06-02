@@ -51,7 +51,6 @@ tne.save_corpus(corpus_path_for_lda, with_title=True)
 id2node = tne.run_lda(lda_corpus_path=corpus_path_for_lda)
 tne.learn_node_embedding(node_corpus_path=corpus_path_for_node, node_embedding_file=node_embedding_file)
 tne.learn_topic_embedding(node_corpus_path=corpus_path_for_node,
-                          number_of_topics=params['number_of_topics'],
                           topic_embedding_file=topic_embedding_file)
 
 
