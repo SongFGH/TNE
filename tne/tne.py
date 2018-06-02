@@ -91,28 +91,28 @@ class TNE:
         # Generate a corpus
 
         if self.params['method'] == "deepwalk":
-            if not ('number_of_walks' and 'walk_length' and 'alpha') in self.params.keys():
-                raise ValueError("A missing parameter exists!")
+            if not ('number_of_walks' and 'walk_length' and 'dw_alpha') in self.params.keys():
+                raise ValueError("A parameter is missing!")
 
             # Temporarily generate the edge list
-            with smart_open(self.temp_folder + "graph_deepwalk.edgelist", 'w') as f:
+            with open(self.temp_folder + "graph_deepwalk.edgelist", 'w') as f:
                 for line in nx.generate_edgelist(self.graph, data=False):
                     f.write("{}\n".format(line))
 
             dwg = deepwalk.load_edgelist(self.temp_folder + "graph_deepwalk.edgelist", undirected=True)
             self.corpus = deepwalk.build_deepwalk_corpus(G=dwg, num_paths=self.params['number_of_walks'],
                                                          path_length=self.params['walk_length'],
-                                                         alpha=self.params['alpha'],
+                                                         alpha=self.params['dw_alpha'],
                                                          rand=random.Random(0))
 
         elif self.params['method'] == "node2vec":
 
-            if not ('number_of_walks' and 'walk_length' and 'p' and 'q') in self.params.keys():
+            if not ('number_of_walks' and 'walk_length' and 'n2v_p' and 'n2v_q') in self.params.keys():
                 raise ValueError("A missing parameter exists!")
 
             for edge in self.graph.edges():
                 self.graph[edge[0]][edge[1]]['weight'] = 1
-            G = node2vec.Graph(nx_G=self.graph, p=self.params['p'], q=self.params['q'], is_directed=False)
+            G = node2vec.Graph(nx_G=self.graph, p=self.params['n2v_p'], q=self.params['n2v_q'], is_directed=False)
             G.preprocess_transition_probs()
             self.corpus = G.simulate_walks(num_walks=self.params['number_of_walks'],
                                            walk_length=self.params['walk_length'])
@@ -127,7 +127,7 @@ class TNE:
     def save_corpus(self, corpus_file, with_title=False, corpus=None):
 
         # Save the corpus
-        with smart_open(corpus_file, "w") as f:
+        with open(corpus_file, "w") as f:
 
             if with_title is True:
                 f.write(u"{}\n".format(self.number_of_nodes * self.params['number_of_walks']))
@@ -144,7 +144,7 @@ class TNE:
         initial_time = time.time()
 
         # Extract the node embeddings
-        self.model = Word2VecWrapper(sentences=LineSentence(node_corpus_path),
+        self.model = Word2VecWrapper(sentences=self.corpus,
                                      size=self.params["embedding_size"],
                                      window=self.params["window_size"],
                                      sg=1, hs=1,
@@ -157,7 +157,7 @@ class TNE:
 
     def run_lda(self, lda_corpus_path):
 
-        if not ('alpha' and 'beta' and 'number_of_iters' and 'number_of_topics') in self.params.keys():
+        if not ('lda_alpha' and 'lda_beta' and 'lda_number_of_iters' and 'number_of_topics') in self.params.keys():
             raise ValueError("Missing paramater for LDA!")
 
         self.lda_corpus_dir = os.path.dirname(os.path.join(lda_corpus_path))
@@ -170,11 +170,11 @@ class TNE:
         initial_time = time.time()
         # Run GibbsLDA++
         cmd = "{} -est ".format(lda_exe_path)
-        cmd += "-alpha {} ".format(self.params['alpha'])
-        cmd += "-beta {} ".format(self.params['beta'])
+        cmd += "-alpha {} ".format(self.params['lda_alpha'])
+        cmd += "-beta {} ".format(self.params['lda_beta'])
         cmd += "-ntopics {} ".format(self.params['number_of_topics'])
-        cmd += "-niters {} ".format(self.params['number_of_iters'])
-        cmd += "-savestep {} ".format(self.params['number_of_iters']+1)
+        cmd += "-niters {} ".format(self.params['lda_number_of_iters'])
+        cmd += "-savestep {} ".format(self.params['lda_number_of_iters']+1)
         cmd += "-dfile {} ".format(lda_corpus_path)
         os.system(cmd)
 

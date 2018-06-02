@@ -13,18 +13,18 @@ dataset_file = "citeseer.gml"
 params = {}
 params['method'] = "deepwalk"
 params['number_of_topics'] = 65
-params['number_of_iters'] = 1000
+params['lda_number_of_iters'] = 1000
 
 params['number_of_walks'] = 40
 params['walk_length'] = 10
 
 params['window_size'] = 10
 params['embedding_size'] = 128
-params['alpha'] = 0
-params['p'] = 1.0
-params['q'] = 1.0
-params['alpha'] = 50.0/float(params['number_of_topics'])
-params['beta'] = 0.1
+params['dw_alpha'] = 0
+params['n2v_p'] = 1.0
+params['n2v_q'] = 1.0
+params['lda_alpha'] = 50.0/float(params['number_of_topics'])
+params['lda_beta'] = 0.1
 
 
 base_desc = "{}_n{}_l{}_w{}_k{}_{}".format(splitext(basename(dataset_file))[0],
