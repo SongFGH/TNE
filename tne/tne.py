@@ -31,24 +31,20 @@ class WalkIterator:
 
 
 class TNE:
-    def __init__(self, graph_path=None):
+    def __init__(self, graph_path=None, params={}):
         self.graph = None
         self.graph_name = ""
         self.number_of_nodes = 0
-        self.method = ""
         self.corpus = []
-        self.params = {}
+        self.params = params
         self.model = None
 
         self.temp_folder = "../temp/"
-        self.node_corpus_path = ""
-        self.topic_corpus_path = ""
 
         self.lda_corpus_dir = ""
         self.lda_wordmapfile = ""
         self.lda_tassignfile = ""
-        self.lda_node_corpus = ""
-        self.lda_topic_corpus = ""
+        self.lda_topic_corpus_path = ""
         self.lda_phi_file = ""
         self.lda_theta_file = ""
 
@@ -57,6 +53,9 @@ class TNE:
 
         if not os.path.exists(self.temp_folder):
             os.makedirs(self.temp_folder)
+
+    def get_number_of_nodes(self):
+        return self.graph.number_of_nodes()
 
     def read_graph(self, filename, filetype=".gml"):
         dataset_name = os.path.splitext(os.path.basename(filename))[0]
@@ -83,16 +82,17 @@ class TNE:
         print("The number of nodes: {}".format(self.graph.number_of_nodes()))
         print("The number of edges: {}".format(self.graph.number_of_edges()))
 
-    def perform_random_walks(self, method, params):
+    def set_params(self, params):
+        self.params = params
+
+    def perform_random_walks(self, node_corpus_path):
 
         initial_time = time.time()
         # Generate a corpus
 
-        if method == "deepwalk":
-            if not ('number_of_walks' and 'walk_length' and 'alpha') in params.keys():
+        if self.params['method'] == "deepwalk":
+            if not ('number_of_walks' and 'walk_length' and 'alpha') in self.params.keys():
                 raise ValueError("A missing parameter exists!")
-
-            self.params = params
 
             # Temporarily generate the edge list
             with smart_open(self.temp_folder + "graph_deepwalk.edgelist", 'w') as f:
@@ -105,12 +105,10 @@ class TNE:
                                                          alpha=self.params['alpha'],
                                                          rand=random.Random(0))
 
-        elif method == "node2vec":
+        elif self.params['method'] == "node2vec":
 
-            if not ('number_of_walks' and 'walk_length' and 'p' and 'q') in params.keys():
+            if not ('number_of_walks' and 'walk_length' and 'p' and 'q') in self.params.keys():
                 raise ValueError("A missing parameter exists!")
-
-            self.params = params
 
             for edge in self.graph.edges():
                 self.graph[edge[0]][edge[1]]['weight'] = 1
@@ -122,11 +120,7 @@ class TNE:
         else:
             raise ValueError("Invalid method name!")
 
-        self.node_corpus_path = os.path.join(self.temp_folder, "node.corpus")
-        self.save_corpus(self.node_corpus_path, with_title=False)
-
-        self.method = method
-        self.params = params
+        self.save_corpus(node_corpus_path, with_title=False)
 
         print("The corpus was generated in {:.2f} secs.".format(time.time() - initial_time))
 
@@ -145,12 +139,12 @@ class TNE:
                 for walk in corpus:
                     f.write(u"{}\n".format(u" ".join(v for v in walk)))
 
-    def extract_node_embedding(self, node_embedding_file, workers=3):
+    def learn_node_embedding(self, node_corpus_path, node_embedding_file, workers=3):
 
         initial_time = time.time()
 
         # Extract the node embeddings
-        self.model = Word2VecWrapper(sentences=LineSentence(self.node_corpus_path),
+        self.model = Word2VecWrapper(sentences=LineSentence(node_corpus_path),
                                      size=self.params["embedding_size"],
                                      window=self.params["window_size"],
                                      sg=1, hs=1,
@@ -161,24 +155,26 @@ class TNE:
         self.model.wv.save_word2vec_format(fname=node_embedding_file)
         print("The node embeddings were generated and saved in {:.2f} secs.".format(time.time() - initial_time))
 
-    def run_lda(self, alpha, beta, number_of_iters, number_of_topics, lda_corpus_path):
+    def run_lda(self, lda_corpus_path):
+
+        if not ('alpha' and 'beta' and 'number_of_iters' and 'number_of_topics') in self.params.keys():
+            raise ValueError("Missing paramater for LDA!")
 
         self.lda_corpus_dir = os.path.dirname(os.path.join(lda_corpus_path))
         self.lda_wordmapfile = os.path.join(self.lda_corpus_dir, "wordmap.txt")
         self.lda_tassignfile = os.path.join(self.lda_corpus_dir, "model-final.tassign")
-        self.lda_node_corpus = os.path.join(self.lda_corpus_dir, "lda_node.file")
-        self.lda_topic_corpus = os.path.join(self.lda_corpus_dir, "lda_topic.file")
+        self.lda_topic_corpus_path = os.path.join(self.lda_corpus_dir, "lda_topic.file")
         self.lda_phi_file = os.path.join(self.lda_corpus_dir, "model-final.phi")
         self.lda_theta_file = os.path.join(self.lda_corpus_dir, "model-final.theta")
 
         initial_time = time.time()
         # Run GibbsLDA++
         cmd = "{} -est ".format(lda_exe_path)
-        cmd += "-alpha {} ".format(alpha)
-        cmd += "-beta {} ".format(beta)
-        cmd += "-ntopics {} ".format(number_of_topics)
-        cmd += "-niters {} ".format(number_of_iters)
-        cmd += "-savestep {} ".format(number_of_iters+1)
+        cmd += "-alpha {} ".format(self.params['alpha'])
+        cmd += "-beta {} ".format(self.params['beta'])
+        cmd += "-ntopics {} ".format(self.params['number_of_topics'])
+        cmd += "-niters {} ".format(self.params['number_of_iters'])
+        cmd += "-savestep {} ".format(self.params['number_of_iters']+1)
         cmd += "-dfile {} ".format(lda_corpus_path)
         os.system(cmd)
 
@@ -190,7 +186,7 @@ class TNE:
 
         return id2node
 
-    def get_topic_corpus(self):
+    def generate_topic_corpus(self):
         topic_corpus = []
         with smart_open(self.lda_tassignfile, 'r') as f:
             for line in f:
@@ -199,16 +195,16 @@ class TNE:
 
         return topic_corpus
 
-    def extract_topic_embedding(self, number_of_topics, topic_embedding_file):
+    def learn_topic_embedding(self, node_corpus_path, number_of_topics, topic_embedding_file):
         # Define the paths for the files generated by GibbsLDA++
         initial_time = time.time()
         # Convert node corpus to the corresponding topic corpus
-        topic_corpus = self.get_topic_corpus()
-        self.topic_corpus_path = os.path.join(self.temp_folder, "topic.corpus")
-        self.save_corpus(corpus_file=self.topic_corpus_path,  with_title=False, corpus=topic_corpus)
+        topic_corpus = self.generate_topic_corpus()
+        self.lda_topic_corpus_path = os.path.join(self.temp_folder, "topic.corpus")
+        self.save_corpus(corpus_file=self.lda_topic_corpus_path,  with_title=False, corpus=topic_corpus)
 
         # Construct the tuples (word, topic) with each word in the corpus and its corresponding topic assignment
-        combined_sentences = CombineSentences(self.node_corpus_path, self.topic_corpus_path)
+        combined_sentences = CombineSentences(node_corpus_path, self.lda_topic_corpus_path)
         # Extract the topic embeddings
         self.model.train_topic(number_of_topics, combined_sentences)
         # Save the topic embeddings
@@ -226,11 +222,5 @@ class TNE:
     def get_nxgraph(self):
         return self.graph
 
-    def get_lda_corpus_path(self):
-        return self.lda_node_corpus
-
-    def get_node_corpus_path(self):
-        return self.node_corpus_path
-
     def get_topic_corpus_path(self):
-        return self.topic_corpus_path
+        return self.lda_topic_corpus_path

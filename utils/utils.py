@@ -2,7 +2,8 @@ import numpy as np
 from collections import OrderedDict
 from gensim.utils import smart_open
 
-def find_max_topic_for_nodes(phi_file, id2node, number_of_topics):
+
+def find_topics_for_nodes(phi_file, id2node, number_of_topics, type):
 
     number_of_nodes = len(id2node)
 
@@ -15,31 +16,14 @@ def find_max_topic_for_nodes(phi_file, id2node, number_of_topics):
             phi[i, :] = [float(v) for v in vals.strip().split()]
             i += 1
 
-    argmaxinx = np.argmax(phi, axis=0)
+    if type == "max":
+        arginx = np.argmax(phi, axis=0)
+    if type == "min":
+        arginx = np.argmin(phi, axis=0)
 
     node2topic = {}
-    for i in range(argmaxinx.shape[0]):
-        node2topic.update({id2node[i]: argmaxinx[i]})
-
-    return node2topic
-
-
-def find_min_topic_for_nodes(phi_file, id2node, number_of_nodes, number_of_topics):
-
-    # Phi is the node-topic distribution
-    phi = np.zeros(shape=(number_of_topics, number_of_nodes), dtype=np.float)
-
-    i = 0
-    with smart_open(phi_file, 'r') as f:
-        for vals in f.readlines():
-            phi[i, :] = [float(v) for v in vals.strip().split()]
-            i += 1
-
-    argmininx = np.argmin(phi, axis=0)
-
-    node2topic = {}
-    for i in range(argmininx.shape[0]):
-        node2topic.update({id2node[i]: argmininx[i]})
+    for i in range(arginx.shape[0]):
+        node2topic.update({id2node[i]: arginx[i]})
 
     return node2topic
 
@@ -63,7 +47,7 @@ def convert_node2topic(tassign_file):
             yield [token.split(':')[1] for token in tokens]
 
 
-def concatenate_embeddings_max(node_embedding_file, topic_embedding_file, node2topic, output_filename):
+def concatenate_embeddings(node_embedding_file, topic_embedding_file, node2topic, output_filename):
 
     # Read the node embeddings
     node_embeddings = OrderedDict()
@@ -144,38 +128,3 @@ def concatenate_embeddings_avg(node_embedding_file, topic_embedding_file, phi_fi
         f.write("{} {}\n".format(number_of_nodes, concatenated_embedding_length))
         for node in node_embeddings:
             f.write("{} {}\n".format(node, " ".join(str(v) for v in concatenated_embeddings[node])))
-
-
-def concatenate_embeddings_min(node_embedding_file, topic_embedding_file, node2topic, output_filename):
-
-    # Read the node embeddings
-    node_embeddings = OrderedDict()
-    with smart_open(node_embedding_file, 'r') as f:
-        f.readline()  # Skip the first line
-        for line in f:
-            tokens = line.strip().split()
-            # word = int(tokens[0])
-            node_embeddings.update({tokens[0]: [val for val in tokens[1:]]})
-
-    # Read the topic embeddings
-    topic_embeddings = {}
-    topic_num = 0
-    with smart_open(topic_embedding_file, 'r') as f:
-        f.readline()  # Skip the first line
-        for line in f:
-            tokens = line.strip().split()
-            # word = int(tokens[0])
-            topic_embeddings.update({tokens[0]: [val for val in tokens[1:]]})
-            topic_num += 1
-
-    # Concatenate the embeddings
-    concatenated_embeddings = {}
-    for node in node_embeddings:
-        concatenated_embeddings.update({node: node_embeddings[node] + topic_embeddings[str(node2topic[node])]})
-
-    number_of_nodes = len(concatenated_embeddings.keys())
-    concatenated_embedding_length = len(concatenated_embeddings.values()[0])
-    with smart_open(output_filename, 'w') as f:
-        f.write("{} {}\n".format(number_of_nodes, concatenated_embedding_length))
-        for node in node_embeddings:
-            f.write("{} {}\n".format(node, " ".join(concatenated_embeddings[node])))
