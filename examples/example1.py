@@ -1,55 +1,79 @@
+import os
 from os.path import basename, splitext, join
 from tne.tne import TNE
 from utils.utils import *
 import time
 
 dataset_folder = "../datasets/"
+dataset_file = "citeseer.gml"
+
 outputs_folder = "../outputs/"
 temp_folder = "../temp/"
 
-dataset_file = "POS.gml"
-
-
+# Set all parameters #
 params = {}
 params['method'] = "deepwalk"
-params['number_of_topics'] = 65
-params['lda_number_of_iters'] = 1000
-
-params['number_of_walks'] = 40
+# Common parameters
+params['number_of_walks'] = 80
 params['walk_length'] = 10
-
 params['window_size'] = 10
 params['embedding_size'] = 128
+params['number_of_topics'] = 10
+# Parameters for LDA
+params['lda_number_of_iters'] = 1000
+params['lda_alpha'] = 50.0 / float(params['number_of_topics'])
+params['lda_beta'] = 0.1
+# Parameters for Deepwalk
 params['dw_alpha'] = 0
+# Parameters for Node2vec
 params['n2v_p'] = 1.0
 params['n2v_q'] = 1.0
-params['lda_alpha'] = 50.0/float(params['number_of_topics'])
-params['lda_beta'] = 0.1
 
+# Define the file paths
+nx_graph_path = dataset_folder + dataset_file
 
-base_desc = "{}_n{}_l{}_w{}_k{}_{}".format(splitext(basename(dataset_file))[0],
+file_desc = "{}_n{}_l{}_w{}_k{}_{}".format(splitext(basename(dataset_file))[0],
                                            params['number_of_walks'],
                                            params['walk_length'],
                                            params['window_size'],
                                            params['number_of_topics'],
                                            params['method'])
 
-node_embedding_file = join(outputs_folder, "{}_node.embedding".format(base_desc))
-topic_embedding_file = join(outputs_folder, "{}_topic.embedding".format(base_desc))
+# temp folder
+sub_temp_folder = os.path.join(temp_folder, file_desc)
+if not os.path.exists(sub_temp_folder):
+    os.makedirs(sub_temp_folder)
+temp_folder = sub_temp_folder
 
-concatenated_embedding_file_max = join(outputs_folder, "{}_final_max.embedding".format(base_desc))
-concatenated_embedding_file_avg = join(outputs_folder, "{}_final_avg.embedding".format(base_desc))
-concatenated_embedding_file_min = join(outputs_folder, "{}_final_min.embedding".format(base_desc))
+# output folder
+sub_output_folder = os.path.join(outputs_folder, file_desc)
+if not os.path.exists(sub_output_folder):
+    os.makedirs(sub_output_folder)
+outputs_folder = sub_output_folder
 
-corpus_path_for_node = join(temp_folder, "{}_node_corpus.corpus".format(base_desc))
-corpus_path_for_lda = join(temp_folder, "{}_lda_corpus.corpus".format(base_desc))
+node_embedding_file = join(outputs_folder, "{}_node.embedding".format(file_desc))
+topic_embedding_file = join(outputs_folder, "{}_topic.embedding".format(file_desc))
 
-graph_path = dataset_folder + dataset_file
-tne = TNE(graph_path, params)
+concatenated_embedding_file_max = join(outputs_folder, "{}_final_max.embedding".format(file_desc))
+concatenated_embedding_file_avg = join(outputs_folder, "{}_final_avg.embedding".format(file_desc))
+concatenated_embedding_file_min = join(outputs_folder, "{}_final_min.embedding".format(file_desc))
+
+corpus_path_for_node = join(temp_folder, "{}_node_corpus.corpus".format(file_desc))
+corpus_path_for_lda = join(temp_folder, "{}_lda_corpus.corpus".format(file_desc))
+
+# If the temp and output folders not exists, create them
+if not os.path.exists(outputs_folder):
+    os.makedirs(outputs_folder)
+if not os.path.exists(temp_folder):
+    os.makedirs(temp_folder)
+
+####
+tne = TNE(nx_graph_path, params)
 tne.perform_random_walks(node_corpus_path=corpus_path_for_node)
 tne.save_corpus(corpus_path_for_lda, with_title=True)
 id2node = tne.run_lda(lda_corpus_path=corpus_path_for_lda)
-tne.learn_node_embedding(node_corpus_path=corpus_path_for_node, node_embedding_file=node_embedding_file)
+tne.learn_node_embedding(node_corpus_path=corpus_path_for_node,
+                         node_embedding_file=node_embedding_file)
 tne.learn_topic_embedding(node_corpus_path=corpus_path_for_node,
                           topic_embedding_file=topic_embedding_file)
 
