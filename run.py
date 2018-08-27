@@ -88,13 +88,26 @@ def process(args, temp_folder="./temp"):
     if params['emb'] == 'avg' or params['emb'] == 'all':
         # Concatenate the embeddings
         initial_time = time.time()
-        concatenate_embeddings_avg(node_embedding_file=node_embedding_file,
-                                   topic_embedding_file=topic_embedding_file,
-                                   phi_file=phi_file,
-                                   id2node=id2node,
-                                   output_filename=concatenated_embedding_file_avg)
+        concatenate_embeddings_wmean(node_embedding_file=node_embedding_file,
+                                     topic_embedding_file=topic_embedding_file,
+                                     phi_file=phi_file,
+                                     id2node=id2node,
+                                     output_filename=concatenated_embedding_file_avg)
         print("-> The final_avg embeddings were generated and saved in {:.2f} secs | {}".
               format((time.time()-initial_time), concatenated_embedding_file_avg))
+
+        # Concatenate the embeddings2
+        initial_time = time.time()
+        concatenated_embedding_file_avg2 = join(outputs_folder, "{}_final_avg2.embedding".format(file_desc))
+        concatenate_embeddings_wmean2(node_embedding_file=node_embedding_file,
+                                      topic_embedding_file=topic_embedding_file,
+                                      tassing_file=tne.lda_tassignfile,
+                                      phi_file=phi_file,
+                                      lda_num_of_communities=params['number_of_topics'],
+                                      id2node=id2node,
+                                      output_filename=concatenated_embedding_file_avg2)
+        print("-> The final_avg2 embeddings were generated and saved in {:.2f} secs | {}".
+              format((time.time() - initial_time), concatenated_embedding_file_avg2))
 
     if params['emb'] == 'min' or params['emb'] == 'all':
         # Concatenate the embeddings
@@ -129,9 +142,9 @@ def parse_arguments():
                         help='The number of clusters')
     parser.add_argument('--dw_alpha', type=int, default=0,
                         help='The parameter for Deepwalk')
-    parser.add_argument('--n2v_p', type=int, default=0,
+    parser.add_argument('--n2v_p', type=int, default=1,
                         help='The parameter for node2vec')
-    parser.add_argument('--n2v_q', type=int, default=0,
+    parser.add_argument('--n2v_q', type=int, default=1,
                         help='The parameter for node2vec')
     parser.add_argument('--sg', type=int, default=1,
                         help='The training algorithm, 1 for sg, otherwise CBOW')
