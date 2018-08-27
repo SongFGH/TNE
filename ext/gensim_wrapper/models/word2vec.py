@@ -270,19 +270,9 @@ class CombineSentences(object):
         self.topic_filename = topic_filename
         self.node_filename = node_filename
 
-
     def __iter__(self):
         with utils.smart_open(self.topic_filename) as f_topics, utils.smart_open(self.node_filename) as f_nodes:
             for line_nodes, line_topics in zip(f_nodes, f_topics):
                 tokens_nodes = line_nodes.strip().split()
                 tokens_topics = line_topics.strip().split()
                 yield [(v, int(t)) for (v, t) in zip(tokens_nodes, tokens_topics)]
-    """
-
-    def __iter__(self):
-        for line_nodes, line_topics in zip(self.node_filename, self.topic_filename):
-            #tokens_nodes = line_nodes.strip().split()
-            #tokens_topics = line_topics.strip().split()
-            yield [(v, int(t)) for (v, t) in zip(line_nodes, line_topics)]
-    
-    """

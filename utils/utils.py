@@ -77,12 +77,12 @@ def concatenate_embeddings(node_embedding_file, topic_embedding_file, node2topic
     number_of_nodes = len(concatenated_embeddings.keys())
     concatenated_embedding_length = len(concatenated_embeddings.values()[0])
     with smart_open(output_filename, 'w') as f:
-        f.write("{} {}\n".format(number_of_nodes, concatenated_embedding_length))
+        f.write(u"{} {}\n".format(number_of_nodes, concatenated_embedding_length))
         for node in node_embeddings:
-            f.write("{} {}\n".format(node, " ".join(concatenated_embeddings[node])))
+            f.write(u"{} {}\n".format(node, " ".join(concatenated_embeddings[node])))
 
 
-def concatenate_embeddings_avg(node_embedding_file, topic_embedding_file, phi_file, id2node, output_filename):
+def concatenate_embeddings_wmean(node_embedding_file, topic_embedding_file, phi_file, id2node, output_filename):
 
     # Read the node embeddings
     node_embeddings = OrderedDict()
@@ -104,7 +104,7 @@ def concatenate_embeddings_avg(node_embedding_file, topic_embedding_file, phi_fi
             topic_embeddings.update({tokens[0]: [float(val) for val in tokens[1:]]})
             topic_num += 1
 
-    # Phi is the node-topic distribution
+    # Phi is the topic-node distribution
     phi = np.zeros(shape=(topic_num, len(node_embeddings.keys())), dtype=np.float)
     t = 0
     with smart_open(phi_file, 'r') as f:
@@ -117,11 +117,11 @@ def concatenate_embeddings_avg(node_embedding_file, topic_embedding_file, phi_fi
     number_of_nodes = len(node_embeddings.keys())
     d = len(topic_embeddings['0'])
     for idx in range(number_of_nodes):
-        vec = np.zeros(shape=d, dtype=np.float)
+        wmean_topic_vec = np.zeros(shape=d, dtype=np.float)
         for t in range(topic_num):
-            vec += np.multiply(topic_embeddings[str(t)], phi[t, idx])
+            wmean_topic_vec += np.multiply(topic_embeddings[str(t)], phi[t, idx])
 
-        concatenated_embeddings.update({id2node[idx]: node_embeddings[id2node[idx]] + vec.tolist()})
+        concatenated_embeddings.update({id2node[idx]: node_embeddings[id2node[idx]] + wmean_topic_vec.tolist()})
 
     concatenated_embedding_length = len(concatenated_embeddings.values()[0])
     with smart_open(output_filename, 'w') as f:

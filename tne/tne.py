@@ -143,11 +143,21 @@ class TNE:
 
         initial_time = time.time()
 
+        if 'negative' not in self.params:
+            self.params['hs'] = 1
+            self.params['negative'] = 0
+        else:
+            if self.params['negative'] > 0:
+                self.params['hs'] = 0
+            else:
+                self.params['hs'] = 1
+
+
         # Extract the node embeddings
         self.model = Word2VecWrapper(sentences=self.corpus,
                                      size=self.params["embedding_size"],
                                      window=self.params["window_size"],
-                                     sg=1, hs=1,
+                                     sg=1, hs=self.params['hs'], negative=self.params['negative'],
                                      workers=workers,
                                      min_count=0)
 

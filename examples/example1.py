@@ -12,13 +12,13 @@ temp_folder = "../temp/"
 
 # Set all parameters #
 params = {}
-params['method'] = "deepwalk"
+params['method'] = "node2vec"
 # Common parameters
 params['number_of_walks'] = 80
 params['walk_length'] = 10
 params['window_size'] = 10
 params['embedding_size'] = 128
-params['number_of_topics'] = 10
+params['number_of_topics'] = 80
 # Parameters for LDA
 params['lda_number_of_iters'] = 1000
 params['lda_alpha'] = 50.0 / float(params['number_of_topics'])
@@ -28,6 +28,9 @@ params['dw_alpha'] = 0
 # Parameters for Node2vec
 params['n2v_p'] = 1.0
 params['n2v_q'] = 1.0
+
+params['hs'] = 0
+params['negative'] = 5
 
 # Define the file paths
 nx_graph_path = dataset_folder + dataset_file
@@ -93,11 +96,11 @@ print("-> The final_max embeddings were generated and saved in {:.2f} secs | {}"
 
 # Concatenate the embeddings
 initial_time = time.time()
-concatenate_embeddings_avg(node_embedding_file=node_embedding_file,
-                           topic_embedding_file=topic_embedding_file,
-                           phi_file=phi_file,
-                           id2node=id2node,
-                           output_filename=concatenated_embedding_file_avg)
+concatenate_embeddings_wmean(node_embedding_file=node_embedding_file,
+                             topic_embedding_file=topic_embedding_file,
+                             phi_file=phi_file,
+                             id2node=id2node,
+                             output_filename=concatenated_embedding_file_avg)
 print("-> The final_avg embeddings were generated and saved in {:.2f} secs | {}".format((time.time()-initial_time), concatenated_embedding_file_avg))
 
 initial_time = time.time()
