@@ -26,6 +26,9 @@ def process(args, temp_folder="./temp"):
     # Parameters for Node2vec
     params['n2v_p'] = args.n2v_p
     params['n2v_q'] = args.n2v_q
+    # Parameters for TNE, common
+    params['hs'] = args.hs
+    params['negative'] = args.negative
     # Parameters for LDA
     params['lda_alpha'] = float(50.0 / params['number_of_topics']) if args.lda_alpha == -1.0 else args.lda_alpha
     params['lda_beta'] = args.lda_beta
@@ -140,15 +143,15 @@ def parse_arguments():
                         help='The size of the embedding vector')
     parser.add_argument('--k', type=int, required=True,
                         help='The number of clusters')
-    parser.add_argument('--dw_alpha', type=int, default=0,
+    parser.add_argument('--dw_alpha', type=float, default=0.0,
                         help='The parameter for Deepwalk')
-    parser.add_argument('--n2v_p', type=int, default=1,
+    parser.add_argument('--n2v_p', type=float, default=1.0,
                         help='The parameter for node2vec')
-    parser.add_argument('--n2v_q', type=int, default=1,
+    parser.add_argument('--n2v_q', type=float, default=1.0,
                         help='The parameter for node2vec')
-    parser.add_argument('--sg', type=int, default=1,
-                        help='The training algorithm, 1 for sg, otherwise CBOW')
-    parser.add_argument('--negative', type=int, default=0,
+    parser.add_argument('--hs', type=int, default=0,
+                        help='1 for the hierachical softmax, 1, otherwise 0 for negative sampling')
+    parser.add_argument('--negative', type=int, default=5,
                         help='It specifies how many noise words are used')
     parser.add_argument('--lda_alpha', type=float, default=-1.0,
                         help='A hyperparameter of LDA')
