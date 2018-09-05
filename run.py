@@ -26,6 +26,10 @@ def process(args, temp_folder="./temp"):
     # Parameters for Node2vec
     params['n2v_p'] = args.n2v_p
     params['n2v_q'] = args.n2v_q
+    # Parameters for ComWalk
+    params['cw_p'] = args.cw_p
+    params['cw_q'] = args.cw_q
+    params['cw_r'] = args.cw_r
     # Parameters for TNE, common
     params['hs'] = args.hs
     params['negative'] = args.negative
@@ -131,7 +135,7 @@ def parse_arguments():
                         help='The graph path')
     parser.add_argument('--output', type=str, required=True,
                         help='The path of the output folder')
-    parser.add_argument('--method', choices=['deepwalk', 'node2vec'], required=True,
+    parser.add_argument('--method', choices=['deepwalk', 'node2vec', 'comwalk'], required=True,
                         help='The name of the method used for performing random walks')
     parser.add_argument('--n', type=int, required=True,
                         help='The number of walks')
@@ -149,6 +153,12 @@ def parse_arguments():
                         help='The parameter for node2vec')
     parser.add_argument('--n2v_q', type=float, default=1.0,
                         help='The parameter for node2vec')
+    parser.add_argument('--cw_p', type=float, default=1.0,
+                        help='The parameter for comwalk')
+    parser.add_argument('--cw_q', type=float, default=1.0,
+                        help='The parameter for comwalk')
+    parser.add_argument('--cw_r', type=float, default=1.0,
+                        help='The parameter for comwalk')
     parser.add_argument('--hs', type=int, default=0,
                         help='1 for the hierachical softmax, 1, otherwise 0 for negative sampling')
     parser.add_argument('--negative', type=int, default=5,

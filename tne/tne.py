@@ -9,12 +9,14 @@ from gensim.utils import smart_open
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../ext/deepwalk/deepwalk")))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../ext/node2vec/src")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../ext/comwalk")))
 lda_exe_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../ext/gibbslda/lda"))
 
 
 try:
     import graph as deepwalk
     import node2vec
+    import comwalk
     if not os.path.exists(lda_exe_path):
         raise ImportError
 except ImportError:
@@ -116,6 +118,21 @@ class TNE:
             G.preprocess_transition_probs()
             self.corpus = G.simulate_walks(num_walks=self.params['number_of_walks'],
                                            walk_length=self.params['walk_length'])
+
+        elif self.params['method'] == "comwalk":
+
+            if not ('number_of_walks' and 'walk_length' and 'cw_p' and 'cw_q' and 'cw_r') in self.params.keys():
+                raise ValueError("A missing parameter exists!")
+
+            for edge in self.graph.edges():
+                self.graph[edge[0]][edge[1]]['weight'] = 1
+
+            comwalk_params = {'number_of_walks': self.params['number_of_walks'], 'walk_length': self.params['walk_length'],
+                              'p': self.params['cw_p'], 'q': self.params['cw_q'], 'r': self.params['cw_r']}
+
+            G = comwalk.Graph(nxg=self.graph, params=comwalk_params)
+            G.preprocess_transition_probs()
+            self.corpus = G.perform_walks()
 
         else:
             raise ValueError("Invalid method name!")
